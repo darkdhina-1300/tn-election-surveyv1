@@ -101,7 +101,11 @@
         });
 
         if (response.ok) {
-          status.innerHTML = "✅ Thank you! Your response has been submitted.";
+          status.innerHTML = "✅ Thank you! Redirecting to results...";
+          // Redirect after 1.5s
+          setTimeout(() => {
+            window.location.href = "results.html";
+          }, 1500);
         } else {
           const err = await response.text();
           status.innerHTML = "⚠️ Submission failed: " + err;
