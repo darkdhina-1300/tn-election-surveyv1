@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TN Election 2026 Voter Survey</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      height: 100%; margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #e6f7e6 0%, #fff6e6 50%, #ffece6 100%);
+      -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      margin: 30px auto; padding: 20px;
+      width: 95%; max-width: 480px;
+    }
+    @media (min-width: 520px) { .card { width: 80%; } }
+    @media (min-width: 900px) { .card { width: 480px; } }
+    h1 { text-align: center; margin: 6px 0 16px; font-size: 20px; color: #0b5e0b; }
+    label { display:block; margin:10px 0 6px; font-weight:600; color:#222; }
+    input, select, textarea {
+      width:100%; padding:10px 12px;
+      border-radius:8px; border:1px solid #d0d0d0; font-size:15px; outline:none;
+    }
+    textarea { min-height:84px; resize:vertical; }
+    input:focus, textarea:focus, select:focus { border-color:#9bd18b; box-shadow:0 0 0 3px rgba(19,136,8,0.06); }
+    button {
+      display:block; width:100%; padding:12px; margin-top:16px;
+      border:0; border-radius:8px;
+      background: linear-gradient(180deg,#1a8b12,#0f6605);
+      color:#fff; font-weight:700; font-size:16px; cursor:pointer;
+    }
+    button:active { transform:translateY(1px); }
+    #status { text-align:center; margin-top:12px; color:#333; white-space:pre-wrap; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>TN Election 2026 Voter Survey</h1>
+    <form id="surveyForm">
+      <label for="name">Name *</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="mobile">Mobile Number *</label>
+      <input type="tel" id="mobile" name="mobile" pattern="\d{10}" required>
+
+      <label for="email">Email (Optional)</label>
+      <input type="email" id="email" name="email">
+
+      <label for="city">City *</label>
+      <input type="text" id="city" name="city" required>
+
+      <label for="pincode">Pin Code *</label>
+      <input type="text" id="pincode" name="pincode" pattern="\d{6}" required>
+
+      <label for="vote">Your Vote for TN Election 2026 *</label>
+      <select id="vote" name="vote" required>
+        <option value="">-- Select a Party --</option>
+        <option value="DMK">Dravida Munnetra Kazhagam (DMK)</option>
+        <option value="AIADMK">All India Anna Dravida Munnetra Kazhagam (AIADMK)</option>
+        <option value="TVK">Tamilaga Vettri Kazhagam (TVK)</option>
+        <option value="VCK">Viduthalai Chiruthaigal Katchi (VCK)</option>
+        <option value="NTK">Naam Tamilar Katchi (NTK)</option>
+        <option value="PMK">Pattali Makkal Katchi (PMK)</option>
+        <option value="INC">Indian National Congress (INC)</option>
+        <option value="BJP">Bharatiya Janata Party (BJP)</option>
+        <option value="CPI">Communist Party of India (CPI)</option>
+      </select>
+
+      <label for="comment">Comment</label>
+      <textarea id="comment" name="comment" rows="3"></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    document.getElementById('surveyForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const status = document.getElementById('status');
+      const data = {
+        name: document.getElementById('name').value,
+        mobile: document.getElementById('mobile').value,
+        email: document.getElementById('email').value,
+        city: document.getElementById('city').value,
+        pincode: document.getElementById('pincode').value,
+        vote: document.getElementById('vote').value,
+        comment: document.getElementById('comment').value
+      };
+
+      try {
+        const response = await fetch('/.netlify/functions/createIssue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          status.innerHTML = "✅ Thank you! Your response has been submitted.";
+        } else {
+          const err = await response.text();
+          status.innerHTML = "⚠️ Submission failed: " + err;
+        }
+      } catch (error) {
+        status.innerHTML = "⚠️ Error submitting form: " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>
