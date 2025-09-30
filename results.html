@@ -29,8 +29,6 @@
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
-    /* Party Result Row */
     .party-row {
       display: flex;
       align-items: center;
@@ -43,7 +41,7 @@
     .party-row img {
       width: 60px;
       height: 60px;
-      border-radius: 8px; /* Square image */
+      border-radius: 8px;
       margin-right: 15px;
       object-fit: contain;
       border: 1px solid #ccc;
@@ -74,7 +72,6 @@
       font-size: 14px;
       color: #444;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -91,7 +88,6 @@
     canvas {
       margin-top: 25px;
     }
-
     @media (max-width: 600px) {
       .party-row { flex-direction: column; align-items: flex-start; }
       .party-row img { margin-bottom: 8px; }
@@ -121,7 +117,7 @@
   </div>
 
   <script>
-    // 👇 replace with your repo’s CSV file
+    // CSV file (from GitHub repo)
     const csvUrl = "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/data.csv";
 
     let barChart, pieChart;
@@ -156,20 +152,18 @@
     function renderResults(partyVotes) {
       const totalVotes = Object.values(partyVotes).reduce((a, b) => a + b, 0);
 
-      // Party Images (adjust file paths to match your repo)
-const partyLogos = {
-  "DMK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/DMK.jpg",
-  "AIADMK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/AIADMK.jpg",
-  "TVK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/TVK.jpg",
-  "VCK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/VCK.jpg",
-  "NTK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/NTK.png",
-  "PMK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/PMK.jpg",
-  "INC": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/INC.jpg",
-  "BJP": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/BJP.jpg",
-  "CPI": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/CIP.jpeg"
-};
-
-
+      // Party Logos
+      const partyLogos = {
+        "DMK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/DMK.jpg",
+        "AIADMK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/AIADMK.jpg",
+        "TVK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/TVK.jpg",
+        "VCK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/VCK.jpg",
+        "NTK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/NTK.png",
+        "PMK": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/PMK.jpg",
+        "INC": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/INC.jpg",
+        "BJP": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/BJP.jpg",
+        "CPI": "https://raw.githubusercontent.com/darkdhina-1300/tn-election-surveyv1/main/images/CIP.jpeg"
+      };
 
       // Party Rows
       const partyResults = document.getElementById("partyResults");
@@ -182,7 +176,7 @@ const partyLogos = {
           const row = document.createElement("div");
           row.className = "party-row";
           row.innerHTML = `
-            <img src="${partyImages[party] || 'party-images/default.png'}" alt="${party}">
+            <img src="${partyLogos[party] || 'https://via.placeholder.com/60'}" alt="${party}">
             <div class="party-info">
               <div class="party-name">${party}</div>
               <div class="bar-container"><div class="bar" style="width:0"></div></div>
@@ -282,5 +276,3 @@ const partyLogos = {
   </script>
 </body>
 </html>
-
-
