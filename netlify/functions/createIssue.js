@@ -12,7 +12,7 @@ exports.handler = async (event) => {
     const row = `${data.name},${data.mobile},${data.email || ""},${data.city},${data.pincode},${data.vote},${data.comment || ""}\n`;
 
     const token = process.env.GH_TOKEN;
-    const repo = "darkdhina-1300/tn-election-survey";
+    const repo = "darkdhina-1300/tn-election-surveyv1";
     const path = "data.csv";
 
     // Fetch current data.csv
