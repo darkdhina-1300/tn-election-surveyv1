@@ -128,7 +128,7 @@
 
     async function fetchData() {
       try {
-        const res = await fetch(https://dhinakaran.github.io/election-survey/data.csv + "?t=" + new Date().getTime());
+        const res = await fetch(csvUrl + "?t=" + new Date().getTime());
         if (!res.ok) throw new Error("Failed to load CSV");
         const text = await res.text();
 
@@ -280,5 +280,6 @@
   </script>
 </body>
 </html>
+
 
 
