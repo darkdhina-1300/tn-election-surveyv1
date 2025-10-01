@@ -7,7 +7,8 @@ export async function handler(event) {
   }
 
   try {
-    const { name, mobile, city, pincode, vote } = JSON.parse(event.body);
+    // 👇 Now includes email + comment
+    const { name, mobile, email, city, pincode, vote, comment } = JSON.parse(event.body);
 
     if (!name || !mobile || !city || !pincode || !vote) {
       return { statusCode: 400, body: "Missing fields" };
@@ -17,7 +18,7 @@ export async function handler(event) {
     const repoName = "tn-election-surveyv1";
     const filePath = "data.csv";
 
-    const token = process.env.GH_TOKEN; // 👈 updated here
+    const token = process.env.GH_TOKEN;
 
     // Step 1: Get current file contents + sha
     const getUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`;
@@ -33,9 +34,9 @@ export async function handler(event) {
     const fileData = await getRes.json();
     const sha = fileData.sha;
 
-    // Step 2: Append new line
+    // Step 2: Append new line (match CSV header order)
     const currentContent = Buffer.from(fileData.content, "base64").toString("utf8");
-    const newLine = `${name},${mobile},${city},${pincode},${vote}\n`;
+    const newLine = `${name},${mobile},${email || ""},${city},${pincode},${vote},${comment || ""}\n`;
     const updatedContent = currentContent + newLine;
 
     // Step 3: Commit back
