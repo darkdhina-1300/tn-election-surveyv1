@@ -176,8 +176,11 @@
       });
     }
 
+    // 🔥 Load results on page load
     fetchData();
-    setInterval(fetchData, 60 * 1000);
+
+    // 👉 To auto-update after submission:
+    //   Call fetchData() again from your form's success handler
   </script>
 </body>
 </html>
