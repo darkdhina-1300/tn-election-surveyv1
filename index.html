@@ -48,8 +48,8 @@
       <label for="mobile">Mobile Number *</label>
       <input type="tel" id="mobile" name="mobile" pattern="\d{10}" required>
 
-      <label for="email">Email (Optional)</label>
-      <input type="email" id="email" name="email">
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" required>
 
       <label for="city">City *</label>
       <input type="text" id="city" name="city" required>
@@ -80,17 +80,21 @@
   </div>
 
   <script>
-    document.getElementById('surveyForm').addEventListener('submit', async function(e) {
+    const form = document.getElementById('surveyForm');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
-      const status = document.getElementById('status');
+      status.innerHTML = "⏳ Submitting...";
+
       const data = {
-        name: document.getElementById('name').value,
-        mobile: document.getElementById('mobile').value,
-        email: document.getElementById('email').value,
-        city: document.getElementById('city').value,
-        pincode: document.getElementById('pincode').value,
-        vote: document.getElementById('vote').value,
-        comment: document.getElementById('comment').value
+        name: form.name.value,
+        mobile: form.mobile.value,
+        email: form.email.value,
+        city: form.city.value,
+        pincode: form.pincode.value,
+        vote: form.vote.value,
+        comment: form.comment.value
       };
 
       try {
@@ -102,16 +106,15 @@
 
         if (response.ok) {
           status.innerHTML = "✅ Thank you! Redirecting to results...";
-          // Redirect after 1.5s
           setTimeout(() => {
             window.location.href = "results.html";
           }, 1500);
         } else {
           const err = await response.text();
-          status.innerHTML = "⚠️ Submission failed: " + err;
+          status.innerHTML = "⚠️ Submission failed:\n" + err;
         }
       } catch (error) {
-        status.innerHTML = "⚠️ Error submitting form: " + error.message;
+        status.innerHTML = "⚠️ Error submitting form:\n" + error.message;
       }
     });
   </script>
