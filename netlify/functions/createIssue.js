@@ -1,74 +1,64 @@
-const fetch = require("node-fetch");
+// netlify/functions/createIssue.js
+import fetch from "node-fetch";
 
-exports.handler = async (event) => {
+export async function handler(event) {
+  if (event.httpMethod !== "POST") {
+    return { statusCode: 405, body: "Method Not Allowed" };
+  }
+
   try {
-    if (event.httpMethod !== "POST") {
-      return {
-        statusCode: 405,
-        body: JSON.stringify({ error: "Method not allowed" }),
-      };
-    }
-
-    // Parse form data
-    const { name, mobile, email, city, pincode, vote, comment } = JSON.parse(event.body);
+    const { name, mobile, city, pincode, vote } = JSON.parse(event.body);
 
     if (!name || !mobile || !city || !pincode || !vote) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing required fields" }),
-      };
+      return { statusCode: 400, body: "Missing fields" };
     }
 
-    // 🔹 Fixed repo for your case
-    const repo = "darkdhina-1300/tn-election-surveyv1";
-    const token = process.env.GITHUB_TOKEN; // Add in Netlify env
+    const repoOwner = "darkdhina-1300";
+    const repoName = "tn-election-surveyv1";
     const filePath = "data.csv";
 
-    // 1️⃣ Fetch existing CSV from GitHub
-    const fileRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
-      headers: { Authorization: `token ${token}` },
+    const token = process.env.GH_TOKEN; // 👈 updated here
+
+    // Step 1: Get current file contents + sha
+    const getUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`;
+    const getRes = await fetch(getUrl, {
+      headers: { Authorization: `token ${token}` }
     });
 
-    if (!fileRes.ok) {
-      throw new Error(`Unable to access ${filePath} in repo (status: ${fileRes.status})`);
+    if (!getRes.ok) {
+      const err = await getRes.text();
+      throw new Error(`GitHub fetch failed: ${err}`);
     }
 
-    const fileData = await fileRes.json();
-    const oldContent = Buffer.from(fileData.content, "base64").toString("utf-8");
+    const fileData = await getRes.json();
+    const sha = fileData.sha;
 
-    // 2️⃣ Append new row
-    const newRow = `${name},${mobile},${email || ""},${city},${pincode},${vote},${comment || ""}\n`;
-    const newContent = oldContent + newRow;
+    // Step 2: Append new line
+    const currentContent = Buffer.from(fileData.content, "base64").toString("utf8");
+    const newLine = `${name},${mobile},${city},${pincode},${vote}\n`;
+    const updatedContent = currentContent + newLine;
 
-    // 3️⃣ Commit new content to GitHub
-    const updateRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+    // Step 3: Commit back
+    const putRes = await fetch(getUrl, {
       method: "PUT",
       headers: {
         Authorization: `token ${token}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        message: "Update data.csv via Netlify function",
-        content: Buffer.from(newContent).toString("base64"),
-        sha: fileData.sha,
-      }),
+        message: "Add new survey response",
+        content: Buffer.from(updatedContent).toString("base64"),
+        sha
+      })
     });
 
-    if (!updateRes.ok) {
-      const err = await updateRes.text();
+    if (!putRes.ok) {
+      const err = await putRes.text();
       throw new Error(`GitHub update failed: ${err}`);
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ success: true, message: "Data saved successfully" }),
-    };
-
+    return { statusCode: 200, body: JSON.stringify({ success: true }) };
   } catch (err) {
-    console.error("❌ Error:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
-};
+}
