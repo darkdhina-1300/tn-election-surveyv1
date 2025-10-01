@@ -1,72 +1,74 @@
 const fetch = require("node-fetch");
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
-  }
-
   try {
-    const data = JSON.parse(event.body);
-
-    // Format as CSV row
-    const row = `${data.name},${data.mobile},${data.email || ""},${data.city},${data.pincode},${data.vote},${data.comment || ""}\n`;
-
-    const token = process.env.GH_TOKEN;
-    const repo = "darkdhina-1300/tn-election-surveyv1"; // ✅ updated repo
-    const path = "data.csv";
-    const branch = "main"; // change if your default branch is different
-
-    // Fetch current data.csv
-    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`, {
-      headers: { Authorization: `token ${token}` }
-    });
-
-    let content = "";
-    let sha = null;
-
-    if (res.ok) {
-      const file = await res.json();
-      content = Buffer.from(file.content, "base64").toString("utf-8");
-      sha = file.sha;
-    } else if (res.status === 404) {
-      // Create new file with headers if not found
-      content = "Name,Mobile,Email,City,PinCode,Vote,Comment\n";
-    } else {
-      throw new Error(`Unable to access data.csv in repo (status: ${res.status})`);
+    if (event.httpMethod !== "POST") {
+      return {
+        statusCode: 405,
+        body: JSON.stringify({ error: "Method not allowed" }),
+      };
     }
 
-    // Append row
-    content += row;
+    // Parse form data
+    const { name, mobile, email, city, pincode, vote, comment } = JSON.parse(event.body);
 
-    // Push update
-    const updateRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+    if (!name || !mobile || !city || !pincode || !vote) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Missing required fields" }),
+      };
+    }
+
+    // 🔹 Fixed repo for your case
+    const repo = "darkdhina-1300/tn-election-surveyv1";
+    const token = process.env.GITHUB_TOKEN; // Add in Netlify env
+    const filePath = "data.csv";
+
+    // 1️⃣ Fetch existing CSV from GitHub
+    const fileRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+      headers: { Authorization: `token ${token}` },
+    });
+
+    if (!fileRes.ok) {
+      throw new Error(`Unable to access ${filePath} in repo (status: ${fileRes.status})`);
+    }
+
+    const fileData = await fileRes.json();
+    const oldContent = Buffer.from(fileData.content, "base64").toString("utf-8");
+
+    // 2️⃣ Append new row
+    const newRow = `${name},${mobile},${email || ""},${city},${pincode},${vote},${comment || ""}\n`;
+    const newContent = oldContent + newRow;
+
+    // 3️⃣ Commit new content to GitHub
+    const updateRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
       method: "PUT",
       headers: {
         Authorization: `token ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        message: "Update data.csv with new submission",
-        content: Buffer.from(content).toString("base64"),
-        sha: sha || undefined,
-        branch: branch
-      })
+        message: "Update data.csv via Netlify function",
+        content: Buffer.from(newContent).toString("base64"),
+        sha: fileData.sha,
+      }),
     });
 
     if (!updateRes.ok) {
-      const errText = await updateRes.text();
-      throw new Error(`GitHub update failed: ${errText}`);
+      const err = await updateRes.text();
+      throw new Error(`GitHub update failed: ${err}`);
     }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Submission saved to data.csv ✅" })
+      body: JSON.stringify({ success: true, message: "Data saved successfully" }),
     };
-  } catch (error) {
-    console.error("Error:", error.message);
+
+  } catch (err) {
+    console.error("❌ Error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Server error: " + error.message })
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
